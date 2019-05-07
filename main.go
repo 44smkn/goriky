@@ -1,7 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"goriky/infrastructure/client"
+	"goriky/accesslog/apache"
 	"io/ioutil"
 	"log"
 	"strings"
@@ -15,11 +18,19 @@ func main() {
 	}
 	accessLogs := strings.Split(string(b), "\n")
 	reqPerMinute := 10
-	t := time.NewTicker(int(60/reqPerMinute) * time.Second)
+	client, _ := client.New("http://hogehoge.com")
+	apacheLog := &apache.LogParser{}
+
+	t := time.NewTicker(time.Duration(60/reqPerMinute) * time.Second)
 	defer t.Stop()
-	for {
-		for _ = range t.C {
-			fmt.Println("req!")
+	i := 0
+	for _ = range t.C {
+		if i <= len(accessLogs) {
+			i = 0
 		}
+		req, _ := apacheLog.Parse(accessLogs[i])
+		ctx := context.Background()
+		res, _ := client.SendRequest(ctx, req)
+		fmt.Println(res)
 	}
 }
