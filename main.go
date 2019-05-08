@@ -24,7 +24,7 @@ func main() {
 	t := time.NewTicker(time.Duration(60/reqPerMinute) * time.Second)
 	defer t.Stop()
 	i := 0
-	for _ = range t.C {
+	for range t.C {
 		if i <= len(accessLogs) {
 			i = 0
 		}
