@@ -1,6 +1,8 @@
 package apache
 
 import (
+	"goriky/infrastructure/client"
+	"path"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -22,5 +24,18 @@ func (p *LogParser) Parse(line string) (*http.Request, error) {
 		return nil, fmt.Errorf("failed to parse apachelog (not matched): %s", line)
 	}
 
-	return nil, nil
+	host := matches[2]
+	spath := matches[1]
+	method := matches[3]
+	c, err := client.New(path.Join(host, spath))
+	if err != nil {
+		return nil, err
+	}
+	u := *c.URL
+	req, err := http.NewRequest(method, u.String(), nil)
+	if err != nil {
+        return nil, err
+	}
+
+	return req, nil
 }
