@@ -3,30 +3,30 @@ package apache
 import (
 	"goriky/infrastructure/client"
 	"path"
-	"fmt"
 	"net/http"
-	"regexp"
+	"strings"
 )
 
-type LogParser struct{}
+type LogParser struct{
+	logFormat []string
+}
 
-var logRe = regexp.MustCompile(
-	`^(?:(\S+(?:,\s\S+)*)\s)?` + // %v(The canonical ServerName/virtual host) - 192.168.0.1 or 192.168.0.1,192.168.0.2, 192.168.0.3
-		`(\S+)\s` + // %h(Remote Hostname) $remote_addr
-		`(\S+)\s` + // %l(Remote Logname)
-		`([\S\s]+)\s` + // $remote_user
-		`\[(\d{2}/\w{3}/\d{2}(?:\d{2}:){3}\d{2} [-+]\d{4})\]\s` + // $time_local
-		`(.*)`)
+func NewParser(logFormat string) *LogParser {
+	return &LogParser {
+		logFormat: strings.Split(logFormat, " "),
+	}
+}
 
 func (p *LogParser) Parse(line string) (*http.Request, error) {
-	matches := logRe.FindStringSubmatch(line)
-	if len(matches) < 1 {
-		return nil, fmt.Errorf("failed to parse apachelog (not matched): %s", line)
+
+	var items map[string]string
+	for i, v := range strings.Split(line, " ") {
+		items[p.logFormat[i]] = v
 	}
 
-	host := matches[2]
-	spath := matches[1]
-	method := matches[3]
+	host := items["%h"]
+	spath := items["%U"]
+	method := items["%m"]
 	c, err := client.New(path.Join(host, spath))
 	if err != nil {
 		return nil, err
