@@ -5,6 +5,7 @@ import (
 	"path"
 	"net/http"
 	"strings"
+	li "goriky/accesslog/apache/logitems"
 )
 
 type LogParser struct{
@@ -24,9 +25,9 @@ func (p *LogParser) Parse(line string) (*http.Request, error) {
 		items[p.logFormat[i]] = v
 	}
 
-	host := items["%h"]
-	spath := items["%U"]
-	method := items["%m"]
+	host := items[li.RemoteHost]
+	spath := items[li.Path]
+	method := items[li.Method]
 	c, err := client.New(path.Join(host, spath))
 	if err != nil {
 		return nil, err
