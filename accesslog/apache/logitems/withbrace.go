@@ -1,6 +1,6 @@
 package logitems
 
 const (
-	RequestHeaderRe = "%{.*}i"
-	ResponseHeaderRe = "%{.*}i"
+	RequestHeaderRe = `%{.*}i`
+	ResponseHeaderRe = `%{.*}o`
 )
