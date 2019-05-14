@@ -1,9 +1,10 @@
 package apache
 
 import (
-	"regexp"
-	"goriky/infrastructure/client"
 	"path"
+	"github.com/pkg/errors"
+	"net/url"
+	"regexp"
 	"net/http"
 	"strings"
 	li "goriky/accesslog/apache/logitems"
@@ -26,15 +27,13 @@ func (p *LogParser) Parse(line string) (*http.Request, error) {
 		items[p.logFormat[i]] = v
 	}
 
-	host := items[li.RemoteHost]
-	spath := items[li.Path]
+	urlStr := path.Join(items[li.RemoteHost], items[li.Path])
 	method := items[li.Method]
-	
-	c, err := client.New(path.Join(host, spath))
+	u, err := url.ParseRequestURI(urlStr)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "failed to parse url: %s", urlStr)
 	}
-	u := *c.URL
+
 	req, err := http.NewRequest(method, u.String(), nil)
 	if err != nil {
         return nil, err
