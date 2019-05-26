@@ -1,6 +1,7 @@
 package main
 
 import (
+	flags "github.com/jessevdk/go-flags"
 	"bufio"
 	"context"
 	"fmt"
@@ -13,14 +14,27 @@ import (
 	"time"
 )
 
+type Options struct {
+	LogfilePath string `short:"f" long:"logfile-path" description:"create requests from specificated logfile"`
+	Logformat string `short:"l" long:"logformat" description:"format of logfile"`
+}
+
+
 func main() {
-	f, err := os.Open("sample.log")
+
+	var opts Options
+	_, err := flags.Parse(&opts)
+	if err != nil {
+		os.Exit(1)
+	}
+
+	f, err := os.Open(opts.LogfilePath)
 	if err != nil {
 		log.Fatalln("reading file is failed because of " + err.Error())
 	}
 	defer f.Close()
 
-	format := ""
+	format := opts.Logformat
 	p := apache.NewParser(format)
 	c := client.New()
 	buf := bufio.NewReaderSize(f, 4096) // may change buffer size...?
