@@ -17,6 +17,7 @@ import (
 type Options struct {
 	LogfilePath string `short:"f" long:"logfile-path" description:"create requests from specificated logfile"`
 	Logformat string `short:"l" long:"logformat" description:"format of logfile"`
+	ReqPerMinute int  `short:"r" long:"reqPerMinute" description:"request count per one minute"`
 }
 
 
@@ -51,14 +52,13 @@ func main() {
 	}
 
 	client := client.New()
-	reqPerMinute := 10
 
 	for _, req := range reqs {
 		ctx := context.Background()
 		c.SendRequest(ctx, req)
 	}
 
-	t := time.NewTicker(time.Duration(60/reqPerMinute) * time.Second)
+	t := time.NewTicker(time.Duration(60/opts.ReqPerMinute) * time.Second)
 	defer t.Stop()
 	i := 0
 	for range t.C {
@@ -68,5 +68,6 @@ func main() {
 		ctx := context.Background()
 		res, _ := client.SendRequest(ctx, reqs[i])
 		fmt.Println(res)
+		i++
 	}
 }
