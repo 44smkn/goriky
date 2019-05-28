@@ -22,7 +22,7 @@ func NewParser(logFormat string) *LogParser {
 
 func (p *LogParser) Parse(line string) (*http.Request, error) {
 
-	var items map[string]string
+	items := map[string]string{}
 	for i, v := range strings.Split(line, " ") {
 		items[p.logFormat[i]] = v
 	}
